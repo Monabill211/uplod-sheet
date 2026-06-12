@@ -1,0 +1,4 @@
+const SUPABASE_URL = "https://bokvvoarjuwwffbvmlhm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJva3Z2b2FyanV3d2ZmYnZtbGhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODQ4MTksImV4cCI6MjA5Njg2MDgxOX0.4hRPq76ihgxuXmHUc2CaMAg5N5NUrfQa0dLuagAsGx4";
+
+const TABLE_NAME = "company_uploads";   

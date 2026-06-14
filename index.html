@@ -1,228 +1,540 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>رفع بيانات الشركة</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --brand: #2563eb; --brand-light: #eff6ff; --brand-dark: #1d4ed8;
-      --success: #16a34a; --success-light: #f0fdf4;
-      --danger: #dc2626; --danger-light: #fef2f2;
-      --warning: #d97706;
-      --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
-      --gray-400: #9ca3af; --gray-600: #4b5563; --gray-800: #1f2937;
-      --radius: 10px;
-    }
-    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: var(--gray-50); color: var(--gray-800); min-height: 100vh; padding: 2rem 1rem; }
-    nav { background: white; border-bottom: 1px solid var(--gray-200); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
-    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; }
-    .nav-logo .dot { width: 32px; height: 32px; background: var(--brand); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-    .nav-links { display: flex; gap: 6px; }
-    .nav-links a { padding: 7px 14px; border-radius: 7px; font-size: 0.87rem; color: var(--gray-600); text-decoration: none; transition: background 0.15s; }
-    .nav-links a:hover { background: var(--gray-100); }
-    .nav-links a.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>رفع بيانات الشركة</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#2563eb;--brand-light:#eff6ff;--brand-dark:#1d4ed8;
+  --success:#16a34a;--success-light:#f0fdf4;
+  --danger:#dc2626;--danger-light:#fef2f2;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  --gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937;
+  --radius:10px;
+}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh}
+nav{background:white;border-bottom:1px solid var(--gray-200);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem}
+.nav-logo .dot{width:32px;height:32px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;gap:6px}
+.nav-links a{padding:7px 14px;border-radius:7px;font-size:.87rem;color:var(--gray-600);text-decoration:none;cursor:pointer;transition:background .15s}
+.nav-links a:hover{background:var(--gray-100)}
+.nav-links a.active{background:var(--brand-light);color:var(--brand);font-weight:600}
+.page{display:none;padding:2rem 1rem}
+.page.active{display:block}
+.container{max-width:800px;margin:0 auto}
+.header{text-align:center;margin-bottom:2.5rem}
+.header .logo{width:56px;height:56px;background:var(--brand);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.header h1{font-size:1.6rem;font-weight:700}
+.header p{font-size:.9rem;color:var(--gray-400);margin-top:.3rem}
+.card{background:white;border-radius:var(--radius);border:1px solid var(--gray-200);padding:1.75rem;margin-bottom:1.25rem}
+.card-title{font-size:.95rem;font-weight:600;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.step{width:24px;height:24px;background:var(--brand);color:white;border-radius:50%;font-size:.75rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+label{display:block;font-size:.85rem;color:var(--gray-600);margin-bottom:6px;font-weight:500}
+input[type=text]{width:100%;padding:10px 14px;border:1px solid var(--gray-200);border-radius:8px;font-size:.95rem;color:var(--gray-800);background:var(--gray-50);outline:none;font-family:inherit}
+input[type=text]:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:white}
+.drop-zone{border:2px dashed var(--gray-200);border-radius:var(--radius);padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-50);position:relative}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--brand);background:var(--brand-light)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-zone p{font-size:.9rem;color:var(--gray-600)}
+.drop-zone span{font-size:.8rem;color:var(--gray-400)}
+.file-name{margin-top:.75rem;font-size:.85rem;font-weight:600;color:var(--brand)}
 
-    .container { max-width: 760px; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 2.5rem; }
-    .header .logo { width: 56px; height: 56px; background: var(--brand); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
-    .header h1 { font-size: 1.6rem; font-weight: 700; }
-    .header p { font-size: 0.9rem; color: var(--gray-400); margin-top: 0.3rem; }
-    .card { background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1.75rem; margin-bottom: 1.25rem; }
-    .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
-    .step { width: 24px; height: 24px; background: var(--brand); color: white; border-radius: 50%; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-    label { display: block; font-size: 0.85rem; color: var(--gray-600); margin-bottom: 6px; font-weight: 500; }
-    input[type="text"] { width: 100%; padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 0.95rem; color: var(--gray-800); background: var(--gray-50); outline: none; font-family: inherit; }
-    input[type="text"]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
-    .drop-zone { border: 2px dashed var(--gray-200); border-radius: var(--radius); padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--gray-50); position: relative; }
-    .drop-zone:hover, .drop-zone.dragover { border-color: var(--brand); background: var(--brand-light); }
-    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .drop-zone p { font-size: 0.9rem; color: var(--gray-600); }
-    .drop-zone span { font-size: 0.8rem; color: var(--gray-400); }
-    .file-name { margin-top: 0.75rem; font-size: 0.85rem; font-weight: 600; color: var(--brand); }
-    #preview-section { display: none; }
-    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--gray-200); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-    thead tr { background: var(--gray-100); }
-    th { padding: 10px 14px; text-align: right; font-weight: 600; color: var(--gray-600); white-space: nowrap; border-bottom: 1px solid var(--gray-200); }
-    td { padding: 9px 14px; border-bottom: 1px solid var(--gray-100); white-space: nowrap; }
-    tr:last-child td { border-bottom: none; }
-    .btn-submit { width: 100%; padding: 13px; background: var(--brand); color: white; border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
-    .btn-submit:hover:not(:disabled) { background: var(--brand-dark); }
-    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
-    .stats-row { display: flex; gap: 10px; margin-bottom: 1rem; }
-    .stat { flex: 1; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 14px; }
-    .stat .num { font-size: 1.25rem; font-weight: 700; color: var(--brand); }
-    .stat .lbl { font-size: 0.75rem; color: var(--gray-400); margin-top: 2px; }
-    #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); padding: 12px 20px; border-radius: var(--radius); font-size: 0.9rem; font-weight: 500; transition: transform 0.3s ease; z-index: 9999; white-space: nowrap; }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-    #toast.success { background: var(--success-light); color: var(--success); border: 1px solid #86efac; }
-    #toast.error { background: var(--danger-light); color: var(--danger); border: 1px solid #fca5a5; }
-    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+/* Sheet tabs */
+.sheet-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.sheet-tab{padding:6px 14px;border-radius:7px;font-size:.82rem;border:1px solid var(--gray-200);background:white;cursor:pointer;font-family:inherit;color:var(--gray-600);transition:all .15s}
+.sheet-tab.active{background:var(--brand);color:white;border-color:var(--brand)}
+.sheet-content{display:none}
+.sheet-content.active{display:block}
+
+#preview-section{display:none}
+.stats-row{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.stat{flex:1;min-width:100px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:10px 14px}
+.stat .num{font-size:1.25rem;font-weight:700;color:var(--brand)}
+.stat .lbl{font-size:.75rem;color:var(--gray-400);margin-top:2px}
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--gray-200)}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead tr{background:var(--gray-100)}
+th{padding:10px 14px;text-align:right;font-weight:600;color:var(--gray-600);white-space:nowrap;border-bottom:1px solid var(--gray-200)}
+td{padding:9px 14px;border-bottom:1px solid var(--gray-100);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gray-50)}
+.btn-submit{width:100%;padding:13px;background:var(--brand);color:white;border:none;border-radius:var(--radius);font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.btn-submit:hover:not(:disabled){background:var(--brand-dark)}
+.btn-submit:disabled{opacity:.55;cursor:not-allowed}
+
+/* Dashboard */
+.dash-container{max-width:960px;margin:0 auto}
+.page-header{margin-bottom:1.75rem}
+.page-header h1{font-size:1.4rem;font-weight:700}
+.page-header p{font-size:.87rem;color:var(--gray-400);margin-top:3px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.75rem}
+.stat-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius);padding:1rem 1.25rem}
+.stat-card .num{font-size:1.6rem;font-weight:700;color:var(--brand)}
+.stat-card .lbl{font-size:.8rem;color:var(--gray-400);margin-top:3px}
+.search-bar{position:relative;margin-bottom:1.25rem}
+.search-bar input{width:100%;padding:10px 14px 10px 40px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:.9rem;background:white;outline:none;font-family:inherit}
+.search-bar input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.search-bar .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none}
+.dash-table-wrap{background:white;border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden}
+.dash-table-wrap table{font-size:.88rem}
+.dash-table-wrap th{font-size:.82rem;background:var(--gray-100)}
+.company-cell{display:flex;align-items:center;gap:10px}
+.company-avatar{width:36px;height:36px;border-radius:9px;background:var(--brand-light);color:var(--brand);font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.company-name{font-weight:600;font-size:.9rem}
+.badge{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:#16a34a;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:20px}
+.btn-open{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--brand);color:white;border:none;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-open:hover{background:var(--brand-dark)}
+.date-cell{color:var(--gray-400);font-size:.82rem}
+.empty{text-align:center;padding:4rem 1rem;color:var(--gray-400)}
+.empty .icon{font-size:2.5rem;margin-bottom:.75rem}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:14px;width:100%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:1rem;font-weight:700}
+.modal-head .meta{font-size:.8rem;color:var(--gray-400);margin-top:3px}
+.modal-close{width:32px;height:32px;border:none;background:var(--gray-100);border-radius:7px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--gray-200)}
+.modal-body{overflow:auto;padding:1.25rem 1.5rem;flex:1}
+.modal-table-wrap{border:1px solid var(--gray-200);border-radius:8px;overflow:auto}
+.modal-table-wrap table th{background:var(--gray-100)}
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);padding:12px 20px;border-radius:var(--radius);font-size:.9rem;font-weight:500;transition:transform .3s ease;z-index:9999;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--success-light);color:var(--success);border:1px solid #86efac}
+#toast.error{background:var(--danger-light);color:var(--danger);border:1px solid #fca5a5}
+.spinner-white{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+.spinner-blue{width:20px;height:20px;border:2px solid var(--gray-200);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;margin:3rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Warning */
+.warn-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#92400e}
+</style>
 </head>
 <body>
-  <nav>
+
+<nav>
   <div class="nav-logo">
-    <div class="dot">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>
-    </div>
+    <div class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg></div>
     نظام رفع الملفات
   </div>
   <div class="nav-links">
-    <a href="index.html">رفع ملف</a>
-    <a href="dashbord.html" class="active">سجل الشركات</a>
+    <a onclick="showPage('upload')" id="nav-upload" class="active">⬆️ رفع ملف</a>
+    <a onclick="showPage('dashboard')" id="nav-dashboard">📋 سجل الشركات</a>
   </div>
 </nav>
 
+<!-- UPLOAD PAGE -->
+<div class="page active" id="page-upload">
 <div class="container">
   <div class="header">
-    <div class="logo">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>
-    </div>
+    <div class="logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg></div>
     <h1>رفع بيانات الشركة</h1>
-    <p>أدخل اسم الشركة وارفع ملف Excel — هيتحفظ في Supabase</p>
+    <p>أدخل اسم الشركة وارفع ملف Excel</p>
   </div>
-
   <div class="card">
     <div class="card-title"><span class="step">١</span> اسم الشركة</div>
-    <label for="company-name">اسم الشركة</label>
-    <input type="text" id="company-name" placeholder="مثال: شركة النيل للتجارة" />
+    <label>اسم الشركة</label>
+    <input type="text" id="company-name" placeholder="مثال: شركة النيل للتجارة"/>
   </div>
-
   <div class="card">
     <div class="card-title"><span class="step">٢</span> ملف Excel</div>
     <div class="drop-zone" id="drop-zone">
-      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
-      <p>اسحب الملف هنا أو اضغط للاختيار</p>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv"/>
+      <p>🗂️ اسحب الملف هنا أو اضغط للاختيار</p>
       <span>xlsx, xls, csv</span>
       <div class="file-name" id="file-name"></div>
     </div>
   </div>
-
   <div class="card" id="preview-section">
-    <div class="card-title">معاينة البيانات</div>
-    <div class="stats-row" id="stats-row"></div>
-    <div class="table-wrap">
-      <table><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
-    </div>
-    <p style="font-size:0.8rem;color:var(--gray-400);margin-top:0.75rem;" id="preview-note"></p>
+    <div class="card-title">👁️ معاينة البيانات</div>
+    <div id="preview-inner"></div>
   </div>
-
   <button class="btn-submit" id="submit-btn" disabled>💾 حفظ في Supabase</button>
+</div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+<div class="dash-container">
+  <div class="page-header">
+    <h1>📋 سجل الشركات</h1>
+    <p>كل الشركات والملفات المرفوعة</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num" id="stat-companies">-</div><div class="lbl">شركة</div></div>
+    <div class="stat-card"><div class="num" id="stat-uploads">-</div><div class="lbl">ملف مرفوع</div></div>
+    <div class="stat-card"><div class="num" id="stat-rows">-</div><div class="lbl">إجمالي الصفوف</div></div>
+  </div>
+  <div class="search-bar">
+    <span class="ico">🔍</span>
+    <input type="text" id="search" placeholder="ابحث باسم الشركة أو اسم الملف..."/>
+  </div>
+  <div class="dash-table-wrap">
+    <table>
+      <thead><tr><th>الشركة</th><th>اسم الملف</th><th>عدد الصفوف</th><th>تاريخ الرفع</th><th>فتح</th></tr></thead>
+      <tbody id="dash-body"><tr><td colspan="5"><div class="spinner-blue"></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2 id="modal-title">-</h2><div class="meta" id="modal-meta"></div></div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body"><div id="modal-content"><div class="spinner-blue"></div></div></div>
+  </div>
 </div>
 
 <div id="toast"></div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+<script>
+const SUPABASE_URL  = "https://bokvvoarjuwwffbvmlhm.supabase.co"
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJva3Z2b2FyanV3d2ZmYnZtbGhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODQ4MTksImV4cCI6MjA5Njg2MDgxOX0.4hRPq76ihgxuXmHUc2CaMAg5N5NUrfQa0dLuagAsGx4"
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
 
-  // ====== ضع بياناتك هنا ======
-  const SUPABASE_URL  = "https://bokvvoarjuwwffbvmlhm.supabase.co"
-  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJva3Z2b2FyanV3d2ZmYnZtbGhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODQ4MTksImV4cCI6MjA5Njg2MDgxOX0.4hRPq76ihgxuXmHUc2CaMAg5N5NUrfQa0dLuagAsGx4"
-  // =============================
+// ── Navigation ──────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'))
+  document.getElementById('page-' + name).classList.add('active')
+  document.getElementById('nav-' + name).classList.add('active')
+  if (name === 'dashboard') loadDashboard()
+}
 
-  const db = createClient(SUPABASE_URL, SUPABASE_ANON)
+// ── Toast ─────────────────────────────────────────
+let tt
+function showToast(msg, type) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.className = type + ' show'
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 4000)
+}
 
-  let parsedRows = [], parsedHeaders = [], selectedFile = null
+// ══════════════════════════════════════════════════
+//  SMART EXCEL PARSER
+//  يشيل الصفوف الفاضية، يعالج merge cells، يجيب داتا نظيفة
+// ══════════════════════════════════════════════════
+function parseExcelSmart(workbook) {
+  const sheets = {}
 
-  const dropZone    = document.getElementById("drop-zone")
-  const fileInput   = document.getElementById("file-input")
-  const fileNameEl  = document.getElementById("file-name")
-  const previewSec  = document.getElementById("preview-section")
-  const tableHead   = document.getElementById("table-head")
-  const tableBody   = document.getElementById("table-body")
-  const statsRow    = document.getElementById("stats-row")
-  const previewNote = document.getElementById("preview-note")
-  const submitBtn   = document.getElementById("submit-btn")
-  const companyInput= document.getElementById("company-name")
-  const toast       = document.getElementById("toast")
+  for (const sheetName of workbook.SheetNames) {
+    const ws = workbook.Sheets[sheetName]
 
-  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover") })
-  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"))
-  dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("dragover"); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]) })
-  fileInput.addEventListener("change", () => { if(fileInput.files[0]) handleFile(fileInput.files[0]) })
-  companyInput.addEventListener("input", updateBtn)
+    // اجيب كل الداتا raw بدون هيدر تلقائي
+    const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, blankrows: true })
 
-  function handleFile(file) {
-    const ext = file.name.split(".").pop().toLowerCase()
-    if (!["xlsx","xls","csv"].includes(ext)) { showToast("نوع الملف مش مدعوم", "error"); return }
-    selectedFile = file
-    fileNameEl.textContent = "📄 " + file.name
-    const reader = new FileReader()
-    reader.onload = e => {
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" })
-      const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" })
-      if (!json.length) { showToast("الملف فاضي!", "error"); return }
-      parsedHeaders = Object.keys(json[0])
-      parsedRows = json
-      renderPreview()
-      updateBtn()
+    // خلي الداتا نظيفة
+    const cleaned = cleanSheet(raw, sheetName)
+    sheets[sheetName] = cleaned
+  }
+
+  return sheets
+}
+
+function cleanSheet(raw, sheetName) {
+  // 1) شيل الصفوف اللي فيها None كلها
+  const nonEmpty = raw.filter(row => row.some(cell => cell !== null && cell !== '' && cell !== undefined))
+
+  if (nonEmpty.length === 0) return { headers: [], rows: [] }
+
+  // 2) ابحث عن أول صف فيه أكتر من 2 قيمة - ده الهيدر الحقيقي
+  let headerRowIdx = 0
+  let maxCells = 0
+  for (let i = 0; i < Math.min(nonEmpty.length, 10); i++) {
+    const filled = nonEmpty[i].filter(c => c !== null && c !== '' && c !== undefined).length
+    if (filled > maxCells) {
+      maxCells = filled
+      headerRowIdx = i
     }
-    reader.readAsArrayBuffer(file)
   }
 
-  function renderPreview() {
-    statsRow.innerHTML = `
-      <div class="stat"><div class="num">${parsedRows.length}</div><div class="lbl">صف</div></div>
-      <div class="stat"><div class="num">${parsedHeaders.length}</div><div class="lbl">عمود</div></div>
-      <div class="stat"><div class="num">${(selectedFile.size/1024).toFixed(1)} KB</div><div class="lbl">الحجم</div></div>`
-    tableHead.innerHTML = `<tr>${parsedHeaders.map(h=>`<th>${h}</th>`).join("")}</tr>`
-    tableBody.innerHTML = parsedRows.slice(0,10).map(r=>`<tr>${parsedHeaders.map(h=>`<td>${r[h]??""}</td>`).join("")}</tr>`).join("")
-    previewNote.textContent = parsedRows.length > 10 ? `عارض أول 10 صفوف — هيترفعوا كل الـ ${parsedRows.length}` : ""
-    previewSec.style.display = "block"
-  }
+  // 3) بناء الهيدر - شيل الـ null وسمّي الأعمدة الفاضية
+  const rawHeaders = nonEmpty[headerRowIdx]
+  const headers = rawHeaders.map((h, i) => {
+    if (h === null || h === '' || h === undefined) return `عمود_${i + 1}`
+    return String(h).trim()
+  }).filter((h, i) => rawHeaders[i] !== null || i < rawHeaders.length - 1)
 
-  function updateBtn() {
-    submitBtn.disabled = !(companyInput.value.trim() && parsedRows.length)
-  }
+  // 4) بناء الصفوف بعد الهيدر
+  const rows = []
+  for (let i = headerRowIdx + 1; i < nonEmpty.length; i++) {
+    const row = nonEmpty[i]
+    // شيل الصف لو أكتر من 70% منه فاضي
+    const filledCount = row.filter(c => c !== null && c !== '' && c !== undefined).length
+    const filledRatio = filledCount / headers.length
+    if (filledRatio < 0.2) continue
 
-  submitBtn.addEventListener("click", async () => {
-    const name = companyInput.value.trim()
-    if (!name || !parsedRows.length) return
-    setLoading(true)
-    try {
-      const { data: co, error: e1 } = await db.from("companies").insert({ name }).select().single()
-      if (e1) throw e1
-
-      const { data: up, error: e2 } = await db.from("uploads").insert({
-        company_id: co.id, file_name: selectedFile.name,
-        row_count: parsedRows.length, columns: parsedHeaders
-      }).select().single()
-      if (e2) throw e2
-
-      for (let i = 0; i < parsedRows.length; i += 500) {
-        const chunk = parsedRows.slice(i, i+500).map((row, idx) => ({
-          upload_id: up.id, company_id: co.id,
-          row_index: i+idx, row_data: row
-        }))
-        const { error: e3 } = await db.from("upload_rows").insert(chunk)
-        if (e3) throw e3
+    const obj = {}
+    headers.forEach((h, idx) => {
+      let val = row[idx]
+      // شيل الـ formulas (بتبدأ بـ =)
+      if (typeof val === 'string' && val.startsWith("='")) {
+        val = null
       }
+      obj[h] = val !== undefined && val !== null ? val : ''
+    })
 
-      showToast(`✅ تم! ${parsedRows.length} صف اتحفظوا`, "success")
-      parsedRows=[]; parsedHeaders=[]; selectedFile=null
-      companyInput.value=""; fileNameEl.textContent=""; fileInput.value=""
-      previewSec.style.display="none"; updateBtn()
-    } catch(err) {
-      console.error(err)
-      showToast("❌ " + (err.message || "حصل خطأ"), "error")
-    } finally { setLoading(false) }
-  })
-
-  function setLoading(on) {
-    if (on) { submitBtn.disabled=true; submitBtn.innerHTML=`<div class="spinner"></div> جاري الحفظ...` }
-    else { submitBtn.innerHTML=`💾 حفظ في Supabase`; updateBtn() }
+    // لو الصف مش فاضي خالص ضيفه
+    const hasData = Object.values(obj).some(v => v !== '' && v !== null)
+    if (hasData) rows.push(obj)
   }
 
-  let tt
-  function showToast(msg, type) {
-    toast.textContent=msg; toast.className=`${type} show`
-    clearTimeout(tt); tt=setTimeout(()=>toast.classList.remove("show"), 4000)
+  return { headers, rows }
+}
+
+// ══════════════════════════════════════════════════
+//  UPLOAD PAGE
+// ══════════════════════════════════════════════════
+let parsedSheets = {}
+let selectedFile = null
+let activeSheet = null
+
+const dropZone    = document.getElementById('drop-zone')
+const fileInput   = document.getElementById('file-input')
+const fileNameEl  = document.getElementById('file-name')
+const previewSec  = document.getElementById('preview-section')
+const previewInner= document.getElementById('preview-inner')
+const submitBtn   = document.getElementById('submit-btn')
+const companyInput= document.getElementById('company-name')
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover') })
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'))
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover')
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0])
+})
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]) })
+companyInput.addEventListener('input', updateBtn)
+
+function handleFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase()
+  if (!['xlsx','xls','csv'].includes(ext)) { showToast('نوع الملف مش مدعوم', 'error'); return }
+  selectedFile = file
+  fileNameEl.textContent = '📄 ' + file.name
+
+  const reader = new FileReader()
+  reader.onload = e => {
+    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' })
+    parsedSheets = parseExcelSmart(wb)
+    activeSheet = Object.keys(parsedSheets)[0]
+    renderPreview()
+    updateBtn()
   }
+  reader.readAsArrayBuffer(file)
+}
+
+function renderPreview() {
+  const sheetNames = Object.keys(parsedSheets)
+  const totalRows = sheetNames.reduce((s, k) => s + parsedSheets[k].rows.length, 0)
+
+  // Stats
+  let html = `<div class="stats-row">
+    <div class="stat"><div class="num">${totalRows}</div><div class="lbl">إجمالي الصفوف</div></div>
+    <div class="stat"><div class="num">${sheetNames.length}</div><div class="lbl">شيت</div></div>
+    <div class="stat"><div class="num">${(selectedFile.size/1024).toFixed(1)} KB</div><div class="lbl">الحجم</div></div>
+  </div>`
+
+  // Sheet tabs لو في أكتر من شيت
+  if (sheetNames.length > 1) {
+    html += `<div class="sheet-tabs">${sheetNames.map(name =>
+      `<button class="sheet-tab${name === activeSheet ? ' active' : ''}" onclick="switchSheet('${name}')">${name}</button>`
+    ).join('')}</div>`
+  }
+
+  // Table for active sheet
+  html += renderSheetTable(activeSheet)
+
+  previewInner.innerHTML = html
+  previewSec.style.display = 'block'
+}
+
+function renderSheetTable(sheetName) {
+  const { headers, rows } = parsedSheets[sheetName]
+
+  if (!rows.length) return `<div class="warn-box">⚠️ الشيت "${sheetName}" مفيش فيه بيانات قابلة للقراءة</div>`
+
+  const previewRows = rows.slice(0, 10)
+  return `
+    <p style="font-size:.8rem;color:var(--gray-600);margin-bottom:.5rem;font-weight:500">
+      📊 ${sheetName} — ${rows.length} صف، ${headers.length} عمود
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+        <tbody>${previewRows.map(r =>
+          `<tr>${headers.map(h => `<td>${r[h] !== undefined ? r[h] : ''}</td>`).join('')}</tr>`
+        ).join('')}</tbody>
+      </table>
+    </div>
+    ${rows.length > 10 ? `<p style="font-size:.78rem;color:var(--gray-400);margin-top:.5rem">عارض أول 10 صفوف من ${rows.length}</p>` : ''}
+  `
+}
+
+function switchSheet(name) {
+  activeSheet = name
+  renderPreview()
+}
+
+function updateBtn() {
+  const hasData = Object.values(parsedSheets).some(s => s.rows.length > 0)
+  submitBtn.disabled = !(companyInput.value.trim() && hasData)
+}
+
+submitBtn.addEventListener('click', async () => {
+  const name = companyInput.value.trim()
+  if (!name) return
+  submitBtn.disabled = true
+  submitBtn.innerHTML = '<div class="spinner-white"></div> جاري الحفظ...'
+
+  try {
+    // كل الصفوف من كل الشيتات مع اسم الشيت
+    const allRows = []
+    const allHeaders = new Set()
+    for (const [sheetName, { headers, rows }] of Object.entries(parsedSheets)) {
+      headers.forEach(h => allHeaders.add(h))
+      rows.forEach(row => allRows.push({ ...row, _sheet: sheetName }))
+    }
+    allHeaders.add('_sheet')
+    const headersArr = [...allHeaders]
+
+    // Insert company
+    const { data: co, error: e1 } = await db.from('companies').insert({ name }).select().single()
+    if (e1) throw e1
+
+    // Insert upload record
+    const { data: up, error: e2 } = await db.from('uploads').insert({
+      company_id: co.id,
+      file_name: selectedFile.name,
+      row_count: allRows.length,
+      columns: headersArr
+    }).select().single()
+    if (e2) throw e2
+
+    // Insert rows in chunks
+    for (let i = 0; i < allRows.length; i += 500) {
+      const chunk = allRows.slice(i, i+500).map((row, idx) => ({
+        upload_id: up.id, company_id: co.id,
+        row_index: i + idx, row_data: row
+      }))
+      const { error: e3 } = await db.from('upload_rows').insert(chunk)
+      if (e3) throw e3
+    }
+
+    showToast(`✅ تم! ${allRows.length} صف اتحفظوا من ${Object.keys(parsedSheets).length} شيت`, 'success')
+    parsedSheets = {}; selectedFile = null
+    companyInput.value = ''; fileNameEl.textContent = ''; fileInput.value = ''
+    previewSec.style.display = 'none'; updateBtn()
+  } catch(err) {
+    console.error(err)
+    showToast('❌ ' + (err.message || 'حصل خطأ'), 'error')
+  } finally {
+    submitBtn.innerHTML = '💾 حفظ في Supabase'
+    updateBtn()
+  }
+})
+
+// ══════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════
+let allData = []
+
+async function loadDashboard() {
+  document.getElementById('dash-body').innerHTML = '<tr><td colspan="5"><div class="spinner-blue"></div></td></tr>'
+  const { data, error } = await db
+    .from('uploads')
+    .select('id, file_name, row_count, columns, created_at, companies(id, name)')
+    .order('created_at', { ascending: false })
+  if (error) {
+    document.getElementById('dash-body').innerHTML = `<tr><td colspan="5"><div class="empty"><p>❌ ${error.message}</p></div></td></tr>`
+    return
+  }
+  allData = data || []
+  renderStats()
+  renderDashTable(allData)
+}
+
+function renderStats() {
+  const companies = new Set(allData.map(r => r.companies?.id)).size
+  const totalRows = allData.reduce((s,r) => s + (r.row_count||0), 0)
+  document.getElementById('stat-companies').textContent = companies
+  document.getElementById('stat-uploads').textContent = allData.length
+  document.getElementById('stat-rows').textContent = totalRows.toLocaleString('ar-EG')
+}
+
+function renderDashTable(rows) {
+  const tbody = document.getElementById('dash-body')
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><div class="icon">📂</div><p>مفيش بيانات لحد دلوقتي</p></div></td></tr>`
+    return
+  }
+  tbody.innerHTML = rows.map(r => {
+    const name = r.companies?.name || '-'
+    const date = new Date(r.created_at).toLocaleDateString('ar-EG', {year:'numeric',month:'short',day:'numeric'})
+    return `<tr>
+      <td><div class="company-cell">
+        <div class="company-avatar">${name.slice(0,2)}</div>
+        <div class="company-name">${name}</div>
+      </div></td>
+      <td><span class="badge">📄 ${r.file_name}</span></td>
+      <td>${(r.row_count||0).toLocaleString('ar-EG')} صف</td>
+      <td class="date-cell">${date}</td>
+      <td><button class="btn-open" onclick="openModal('${r.id}','${r.file_name}','${name}',${r.row_count})">👁 عرض</button></td>
+    </tr>`
+  }).join('')
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase()
+  renderDashTable(allData.filter(r =>
+    (r.companies?.name||'').toLowerCase().includes(q) ||
+    (r.file_name||'').toLowerCase().includes(q)
+  ))
+})
+
+async function openModal(uploadId, fileName, companyName, rowCount) {
+  document.getElementById('modal-title').textContent = fileName
+  document.getElementById('modal-meta').textContent = `${companyName} — ${rowCount} صف`
+  document.getElementById('modal-content').innerHTML = '<div class="spinner-blue"></div>'
+  document.getElementById('modal').classList.add('open')
+
+  const { data, error } = await db
+    .from('upload_rows')
+    .select('row_data, row_index')
+    .eq('upload_id', uploadId)
+    .order('row_index', { ascending: true })
+    .limit(500)
+
+  if (error || !data.length) {
+    document.getElementById('modal-content').innerHTML = '<div class="empty"><p>مفيش بيانات</p></div>'
+    return
+  }
+
+  const headers = Object.keys(data[0].row_data)
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-table-wrap">
+      <table>
+        <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+        <tbody>${data.map(r=>`<tr>${headers.map(h=>`<td>${r.row_data[h]??''}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+    ${rowCount > 500 ? `<p style="font-size:.8rem;color:var(--gray-400);margin-top:.75rem">عارض أول 500 صف من ${rowCount}</p>` : ''}
+  `
+}
+
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('modal').classList.remove('open'))
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('open')
+})
 </script>
 </body>
 </html>

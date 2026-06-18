@@ -151,7 +151,7 @@ input[type=text]:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99
     </div>
   </div>
 
-  <button class="btn-submit" id="submit-btn" disabled>☁️ حفظ على الإنترنت</button>
+  <button class="btn-submit" id="submit-btn" disabled>☁️ حفظ </button>
 </div>
 </div>
 
@@ -317,7 +317,7 @@ submitBtn.addEventListener('click', async () => {
     progressWrap.classList.remove('show')
     showToast('❌ ' + (err.message || 'حصل خطأ'), 'error')
   } finally {
-    submitBtn.innerHTML = '☁️ حفظ على الإنترنت'
+    submitBtn.innerHTML = '☁️ حفظ  '
     updateBtn()
   }
 })
